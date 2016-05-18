@@ -15,30 +15,25 @@ namespace NodeQueue
         private LinkedList<T> queue;
         #endregion
 
+        #region Properties
+        public int Count { get { return queue.Count; } }
+        #endregion
         #region Constructors
         public CustomNodeQueue()
         {
             queue = new LinkedList<T>();
+
         }
 
-        public CustomNodeQueue(IEnumerable<T> collection) : this()
+        public CustomNodeQueue(IEnumerable<T> collection)
         {
             if (collection == null)
                 throw new ArgumentNullException();
-
-            queue = DeepClone(collection) as LinkedList<T>;
+            queue = new LinkedList<T>(collection);
         }
-        #endregion
-        
-        #region Private Methods
-        private static IEnumerable<T> DeepClone(IEnumerable<T> source)
-        {
-            MemoryStream stream = new MemoryStream();
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, source);
-            stream.Position = 0;
-            return (IEnumerable<T>)formatter.Deserialize(stream);
-        }
+        public CustomNodeQueue(params T[] arr)
+            : this((IEnumerable<T>)arr)
+        { }
         #endregion
 
         #region Public Methods
@@ -50,7 +45,7 @@ namespace NodeQueue
         {
             if (value == null)
                 throw new ArgumentNullException();
-            queue.AddLast(value);
+            queue.AddLast(new LinkedListNode<T>(value));
         }
         /// <summary>
         /// Remove element from the queue
@@ -58,12 +53,14 @@ namespace NodeQueue
         /// <returns>First element</returns>
         public T Dequeue()
         {
-            if (queue.First == null)
+            if (ReferenceEquals(null, queue.First))
                 throw new ArgumentNullException();
             T result = queue.First.Value;
             queue.RemoveFirst();
             return result;
         }
+
+
         /// <summary>
         /// Show the first element
         /// </summary>
@@ -71,7 +68,7 @@ namespace NodeQueue
         public T Peek()
         {
             if (queue.First == null)
-                throw new ArgumentNullException();
+                throw new ArgumentException();
             return queue.First.Value;
         }
         #endregion
@@ -99,7 +96,7 @@ namespace NodeQueue
             #region Constructor
             public LinkedListQueueIterator(LinkedList<T> source)
             {
-                queue = DeepClone(source) as LinkedList<T>;
+                queue = new LinkedList<T>(source);
             }
             #endregion
 
@@ -149,6 +146,17 @@ namespace NodeQueue
                 get { return queue.ToArray()[position]; }
             }
             #endregion
+        }
+        #endregion
+
+        #region Private Methods
+        private static IEnumerable<T> DeepClone(IEnumerable<T> source)
+        {
+            MemoryStream stream = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(stream, source);
+            stream.Position = 0;
+            return (IEnumerable<T>)formatter.Deserialize(stream);
         }
         #endregion
     }
